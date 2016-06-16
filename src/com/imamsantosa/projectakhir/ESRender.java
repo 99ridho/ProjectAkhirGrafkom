@@ -19,9 +19,18 @@ public class ESRender implements Renderer {
 	private int y = 0;
 	
 	private int position = 0;
+	private int back_position = 0;
 	private MainMenu mainmenu;
 	private AboutUs about;
 	private ChangeLevel chlevel;
+	private GamePlay gameplay;
+	private Penjumlahan penjumlahan;
+	private Pause pause;
+	
+	
+	private float decrement_timing = 2.5f;
+	private float game_timing = 0.0f;
+	private boolean paused = false;
 	
 	public ESRender(Context context) {
 		// super();
@@ -29,6 +38,10 @@ public class ESRender implements Renderer {
 		this.mainmenu = new MainMenu();	
 		this.about = new AboutUs();
 		this.chlevel = new ChangeLevel();
+		this.gameplay = new GamePlay();
+		this.penjumlahan = new Penjumlahan(context, gameplay);
+		
+		this.pause = new Pause();
 	}
 	
 	public void setX(int x) {
@@ -45,7 +58,8 @@ public class ESRender implements Renderer {
 		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 		gl.glEnable(GL10.GL_NORMALIZE);
-		Log.d("position", position+" ");
+//		penjumlahan.loadImage(gl);
+		Log.v("position", " "+position);
 		
 		switch(position){
 			case 0: // main menu
@@ -57,10 +71,21 @@ public class ESRender implements Renderer {
 			case 2: // change level to play
 				changeLevel(gl);
 				break;
-		
+			case 3: // penjumlahan
+				gamePlay(gl);
+				penjumlahan(gl);
+				break;
+			case 4: // pengurangan
+				break;
+			case 5: // perkalian
+				break;
+			case 6: 
+				paused(gl);
+				break;
 		}
 		
 		teksPointer(gl);
+		
 	}
 	
 	private void teksPointer(GL10 gl){
@@ -74,7 +99,7 @@ public class ESRender implements Renderer {
 
 		glText.begin(0.0f, 1.0f, 0.0f, 1.0f); // Begin Text Rendering (Set Color
 												// // WHITE)
-//		gl.glTranslatef(-2.0f, 1.0f, -5.0f);
+		gl.glTranslatef(2.0f, 150.0f, 1.0f);
 		gl.glScalef(2.0f, 2.0f, 2.0f);
 		glText.draw("Moch Wahyu Imam Santosa :-) x="+x+" y= "+y, 0, 0); // Draw
 		glText.end(); // End Text Rendering
@@ -85,6 +110,81 @@ public class ESRender implements Renderer {
 		gl.glPopMatrix();
 	}
 	
+	private void penjumlahan(GL10 gl){
+		gl.glPushMatrix();
+			penjumlahan.draw(gl);
+		gl.glPopMatrix();
+		
+		// render soal
+		gl.glPushMatrix();
+			gl.glEnable(GL10.GL_BLEND); // Enable Alpha Blend
+			gl.glDisable(GL10.GL_DEPTH_TEST); // Turn depth testing off (NEW)
+			gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+			glText.begin(0.0f, 1.0f, 0.0f, 1.0f);
+			gl.glTranslatef(341.0f, 350.0f, 1.0f);
+			gl.glScalef(5.0f, 5.0f, 1.0f);
+			glText.draw(penjumlahan.getA()+" + "+penjumlahan.getB()+" = ...", 0, 0); // Draw
+			glText.end(); // End Text Rendering
+			gl.glDisable(GL10.GL_BLEND); // Disable Alpha Blend
+		gl.glPopMatrix();
+	}
+	
+	private void gamePlay(GL10 gl){
+		gl.glPushMatrix();
+			gameplay.draw(gl, height, width);
+		gl.glPopMatrix();
+		
+		// render score
+		gl.glPushMatrix();
+			gl.glEnable(GL10.GL_BLEND); // Enable Alpha Blend
+			gl.glDisable(GL10.GL_DEPTH_TEST); // Turn depth testing off (NEW)
+			gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+			glText.begin(0.0f, 1.0f, 0.0f, 1.0f);
+			gl.glTranslatef(341.0f, 580.0f, 1.0f);
+			gl.glScalef(5.0f, 5.0f, 1.0f);
+			if(position == 3){
+				glText.draw(" "+penjumlahan.getScore(), 0, 0); // Draw
+			} else if(position == 4){
+				// score pengurangan
+			} else if(position == 5){
+				// score perkalian
+			}
+			
+			glText.end(); // End Text Rendering
+			gl.glDisable(GL10.GL_BLEND); // Disable Alpha Blend
+		gl.glPopMatrix();
+		
+		//render timing
+		gl.glPushMatrix();
+			gl.glTranslatef(-game_timing, 160.0f, 1.0f);
+			gl.glScalef(width, 20.0f, 0.0f);
+			if(game_timing <= 1000){
+				gameplay.drawTiming(gl);
+			} else {
+				gameplay.drawTimingDanger(gl);
+			}
+		gl.glPopMatrix();
+		if(!paused){
+			game_timing += decrement_timing;
+		}
+		if(game_timing >= 1280){
+			gameOver();
+		}
+	}
+	
+	private void gameOver(){
+		this.setPosition(0);
+		game_timing = 0;
+		penjumlahan.gameOver();
+	}
+	
+	private void paused(GL10 gl){
+		gl.glPushMatrix();
+			pause.draw(gl, height, width);
+		gl.glPopMatrix();
+	}
+	
+
 	private void mainMenu(GL10 gl){
 		gl.glPushMatrix(); 
 			mainmenu.draw(gl, height, width);
@@ -107,6 +207,8 @@ public class ESRender implements Renderer {
 		mainmenu.load(gl, context);
 	 	about.load(gl, context);
 	 	chlevel.load(gl, context);
+	 	gameplay.load(gl, context);
+	 	pause.load(gl, context);
 	}
 	
 	@Override
@@ -182,5 +284,28 @@ public class ESRender implements Renderer {
 	
 	public void setPosition(int position) {
 		this.position = position;
+	}
+	
+	public void paused(){
+		back_position = position;
+		this.setPosition(6);
+	}
+	
+	public void resume(){
+		this.setPosition(back_position);
+	}
+	
+	public void pilihJawaban(int pilihan){
+		if(position == 3){
+			if(penjumlahan.pilihJawaban(pilihan)){
+				penjumlahan.next();
+			} else {
+				this.gameOver();
+			}
+		} else if(position == 4){
+			
+		} else if(position == 5){
+			
+		}
 	}
 }

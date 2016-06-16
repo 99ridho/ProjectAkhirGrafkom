@@ -71,6 +71,12 @@ public class ESSurfaceView extends GLSurfaceView {
 				case 2: //ch level
 					listenChangeLevel(_touchingPoint);
 					break;
+				case 3: case 4: case 5:
+					listenGamePlay(_touchingPoint);
+					break;
+				case 6:
+					listenPause(_touchingPoint);
+					break;
 			}
 			
 		} 
@@ -111,14 +117,67 @@ public class ESSurfaceView extends GLSurfaceView {
 		int x = Touching.x;
 		int y = Touching.y;
 		
-		if(x >= 551 && x<= 702 && y >= 44 && y <= 166){
+		if(x >= 547 && x<= 709 && y >= 39 && y <= 169){
 			// action back
 			esRender.setPosition(0);
+		}
+		
+		if(x >= 126 && x<= 395 && y >= 294 && y <= 452){
+			// penjumlahan
+			esRender.setPosition(3);
+		}
+		
+		if(x >= 488 && x<= 759 && y >= 294 && y <= 452){
+			// pengurangan
+		}
+		
+		if(x >= 849 && x<= 1125 && y >= 294 && y <= 452){
+			// perkalian
 		}
 		
 		
 	}
 	
+	private void listenGamePlay(Point Touching){
+		int x = Touching.x;
+		int y = Touching.y;
+		
+		if(x >= 24 && x<= 405 && y >= 20 && y <= 136){
+			// pilih a
+			esRender.pilihJawaban(0);
+		}
+		
+		if(x >= 449 && x<= 831 && y >= 20 && y <= 136){
+			// pilih b
+			esRender.pilihJawaban(1);
+		}
+		
+		if(x >= 871 && x<= 1253 && y >= 20 && y <= 136){
+			// pilih c
+			esRender.pilihJawaban(2);
+		}
+		
+		if(x >= 1148 && x<= 1280 && y >= 551 && y <= 639){
+			// pause
+			esRender.paused();
+		}
+	}
+	
+	private void listenPause(Point Touching){
+		int x = Touching.x;
+		int y = Touching.y;
+		
+		if(x >= 757 && x<= 903 && y >= 73 && y <= 174){
+			// pilih resume
+			esRender.resume();
+		}
+		
+		if(x >= 374 && x<= 523 && y >= 73 && y <= 174){
+			// pilih home
+			
+		}
+		
+	}
 	// Key-up event handler
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
